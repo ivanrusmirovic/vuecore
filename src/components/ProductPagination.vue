@@ -1,0 +1,42 @@
+<template>
+<nav class="mt-5">
+    <ul class="pagination">
+        <li class="page-item" v-if="(currentpage != 1)"
+        @click="getProducts(currentPage - 1)">
+
+        <button class="btn btn mx-1">Previous</button>
+        </li>
+        <li class="page-item" v-for="(p, i) in pageCount" :key="i"
+        @click="getProducts(p)">
+
+        <button class="btn mx-1" :class="[i + 1 == currentPage ? 'btn-primary' : 'btn-secondary',]">{{p}}</button>
+         </li>
+         <li class="page-item" v-if="currentPage != pageCount"
+         @click="getProducts(currentPage + 1)">
+         
+         <button class="btn btn-secondary mx-1">Next</button>
+         </li>
+
+</nav>
+</template>
+
+<script>
+import { mapActions, mapMutations, mapState } from 'vuex';
+
+
+
+export default {
+  computed: {
+    ...mapState(["pageCount", "currentPage"]),
+  },
+  methods: {
+      ...mapMutations(["setCurrentPage"]),
+      ...mapActions(["setProductsByCategoryPaginationAction"]),
+      getProducts(page){
+          this.setCurrentPage(page);
+          this.setProductsByCategoryPaginationAction(page);
+      }
+  },
+};
+</script>
+
