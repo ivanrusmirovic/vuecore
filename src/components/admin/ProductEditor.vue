@@ -3,6 +3,13 @@
     <h2 class="text-center p-2">{{editMode ? "Edit Product" :"Add Product"}}
     </h2>
 
+
+    <h4 v-if="$v.$invalid && v.$dirty" class="bg-danger text-white text-center p-2">
+          Values Required For All Fields!
+    </h4>
+
+
+
          <div class="form-group">
            <label for="">Name</label>
            <input type="text" class="form-control" v-model="product.name">
@@ -17,24 +24,39 @@
          </div>
           <div class="form-group">
            <label for="">Image</label>
-           <input type="file" class="form-control" @change="onFileSelected">
+           <input type="file" class="form-control" @change="onFileSelected"/>
+
+           <p v-if="editMode" class="mt-3">
+             Current Image:
+             <img :src="productImages + product.image" width="100" />
+
+           </p>
          </div>
          <div class="form-group">
            <label for="">Category</label>
            <select class="form-control" @change="onChange">
              <option :value="null">Choose a category</option>
-             <option v-for="(c,i) in categories" :key="i" :value="c.id" :selected="c.
-             id ==product.category.id">
+             <option v-for="(c,i) in categories" 
+                     :key="i" :value="c.id" 
+                     :selected="c.id ==product.categoryId">
              {{ c.name }}
              </option>
              </select>
+         </div>
+         <div class="text-center">
+           <router-link to="/admin/products" class="btn btn-secondary m-1"
+            >Cancel</router-link>
+           <button class="btn btn-primary m-1"
+           @click="handleProduct">
+            {{editMode ? "Edit": "Add"}}
+           </button>
          </div>
 </div>
 </template>
 
 <script>
 import { mapActions, mapMutations, mapState } from 'vuex';
-import ProductPagination from "../ProductPagination.vue";
+import {required} from "vuelidate/lib/validators";
 
 
 export default {
@@ -46,22 +68,67 @@ export default {
           price: null,
           image: null,
           category: null,
-        }
+        },
+    };
+  },
+  validation: {
+    product: {
+      name: {required},
+      description: {required},
+      price: {required},
+      category: {required},
     }
   },
   computed: {
-    ...mapState(["categories"]),
+    ...mapState(["categories", "productImages"]),
+    editMode(){
+      return this.$router.params["op"] == "edit";
+    },
+    
   },
   methods: {
-      ...mapMutations(["setCurrentCategory"]),
-      ...mapActions(["setProductsByCategoryAction"]),
-      handleEdit(product){
-          this.$router.push(`/admin/products/edit/${product.id}`);
-      },
+    ...mapMutations(["setCurrentPage"]),
+    ...mapActions(["addProduct", "editProduct"]),
+     onFileSelected(e) {
+       this.product.image = e.target.files[0];
+     },
+     onChange(e) {
+       this.product.category = e.target.value;
+     },
+     async handleProduct() {
+       this.$v.$touch();
+       if(!this.$v.$invalid) {
+       const product = new FormData();
+
+       product.append("Name", this.product.name);
+       product.append("Description", this.product.description);
+       product.append("Price", this.product.price);
+       product.append("ImageUpload", this.product.image);
+       product.append("Category", this.product.category.id || this.product.category);
+       if (this.editMode) {
+         product.append("Id", this.product.id);
+         product.append("Image", this.product.image.name);
+
+         await this.editProduct(product);
+
+       }
+        else {
+          await this.addProduct(product);
+        }
+        this.setCurrentPage(1);
+        this.$router.push("/admin/products");
+     }
+
+     },
   },
+
   created() {
-    this.setCurrentCategory("all");
-      this.setProductsByCategoryAction("all");
+    if (this.editMode){
+    Object.assign(
+      this.product,
+      this.$store,getters.productById(this.$route.params["id"])
+    );
+    }
   },
 };
 </script>

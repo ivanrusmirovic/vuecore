@@ -22,6 +22,7 @@
                   <img :src="productImages + p.image" width="100" />
                 </td>
                 <td class="align-middle">{{p.price | currency}}</td>
+                <td class="align-middle">{{p.category.name}}</td>
                 <td class="align-midle">
                   <button class="btn btn-sm btn-secondary mx-2" @click="handleEdit (p)">
                     Edit</button>
@@ -37,8 +38,6 @@
 
 <script>
 import { mapActions, mapMutations, mapState } from 'vuex';
-import ProductPagination from '../ProductPagination.vue';
-import ProductPagination from "../ProductPagination.vue";
 
 
 export default {
@@ -48,7 +47,7 @@ export default {
   },
   methods: {
       ...mapMutations(["setCurrentCategory"]),
-      ...mapActions(["setProductsByCategoryAction"]),
+      ...mapActions(["setProductsByCategoryAction", "deleteProduct"]),
       handleEdit(product){
           this.$router.push(`/admin/products/edit/${product.id}`);
       },

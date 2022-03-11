@@ -3,6 +3,7 @@ import Vuex from "vuex";
 import Axios from "axios";
 import CartModule from "./cart";
 import OrderModule from "./orders";
+import AuthModule from "/.auth";
 
 Vue.use(Vuex);
 
@@ -16,7 +17,7 @@ const productImagesUrl = "https://localhost:44399/media/products/";
 export default new Vuex.Store({
 
     strict: true,
-    modules: { cart: CartModule, orders: OrderModule },
+    modules: { cart: CartModule, orders: OrderModule, auth: AuthModule },
     state: {
         pages: [],
         categories: [],
@@ -26,6 +27,10 @@ export default new Vuex.Store({
         pageCount: 0,
         pageSize: 4,
         currentCategory: "all"
+    },
+    getters: {
+        productById: (state) => (id) => state.products.find((p) => p.id == id),
+        pageById: (state) => (id) => state.pages.find((p) => p.id == id),
     },
     mutations: {
         setPages(state, pages) {
@@ -83,5 +88,29 @@ export default new Vuex.Store({
             context.commit("setProducts", (await Axios.get(url)).data);
 
         },
-    }
+
+        async addProduct(context, product) {
+            await Axios.post(productsUrl, product);
+        },
+        async editProduct(context, product) {
+            await Axios.put(productsUrl, product);
+        },
+        async deleteProduct(context,product) {
+            await Axios.delete(`${productsUrl}/${product.id}`);
+            let url = `${productsUrl}?p=${context.state.currentPage}`;
+            context.commit("setProducts", (await (await Axios.get(url)).data));
+        },
+        async addPage(context, page) {
+            await Axios.post(pagesUrl, page);
+            context.commit("setPages", (await Axios.get(pagesUrl)).data);
+        },
+        async editPage(context, page) {
+            await Axios.put(`${pagesUrl}/${page.id}`, page);
+            context.commit("setPages", (await Axios.get(pagesUrl)).data);
+        },
+        async deletePage(context,page) {
+            await Axios.delete(`${pagesUrl}/${page.id}`);
+            context.commit("setPages", (await Axios.get(pagesUrl)).data);
+    },
+},
 });

@@ -1,0 +1,48 @@
+<template>
+<div>
+    <h2>Pages</h2>
+
+      <router-link to="/admin/pages/add" class="btn btn-primary mb-4">
+      Add Pages</router-link>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Slug</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(p, i) in pages" :key="i">
+                <td class="align-middle">{{p.name}}</td>
+                <td class="align-middle">{{p.slug}}</td>
+                <td class="align-midle">
+                  <button class="btn btn-sm btn-secondary mx-2" @click="handleEdit (p)">
+                    Edit</button>
+                    <button class="btn btn-sm btn-danger mx-2" @click="deletePage(p)">
+                      Delete</button>
+              </tr>
+            </tbody>
+          </table>
+
+</div>
+</template>
+
+<script>
+import { mapActions, mapState } from 'vuex';
+
+
+export default {
+  computed: {
+    ...mapState(["pages"]),
+  },
+  methods: {
+      ...mapActions(["deletePage"]),
+      handleEdit(page){
+          this.$router.push(`/admin/pages/edit/${page.id}`);
+      },
+  }
+};
+</script>
+

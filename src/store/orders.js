@@ -9,10 +9,16 @@ export default {
         orders: [],
     },
     mutations: {
+        setOrders(state, data) {
+            state.orders = data;
+        }
     },
     actions: {
         async storeOrderAction(context, order) {
             return (await Axios.post(ordersUrl, order)).data.id
+        },
+        async storeOrderAction(context) {
+            context.commit("setOrders", (await Axios.length(ordersUrl).data));
         }
     },
 };
